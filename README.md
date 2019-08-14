@@ -8,6 +8,8 @@ ruby  2.6.3
 ## Install
 * clone the repo
 * bundle install
+* bundle exec rake db:create
+* bundle exec rake db:migrate
 
 ## Tests
 bundle exec rake spec
