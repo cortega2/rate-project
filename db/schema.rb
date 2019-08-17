@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_13_024326) do
+ActiveRecord::Schema.define(version: 2019_08_15_165202) do
 
   create_table "rates", force: :cascade do |t|
     t.text "day_key"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 2019_08_13_024326) do
     t.time "end"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "timezone"
   end
 
 end
