@@ -33,12 +33,35 @@ class Rate < ApplicationRecord
     tz = TZInfo::Timezone.get(timezone)
     hour = time_string[0...2].to_i
     min = time_string[2..4].to_i
-    Time.new(2000, 1, 1, hour, min, 0, tz)
+    Time.new(2000, 1, 1, hour, min, 0, tz).utc
   end
 
   def self.replace_all(rates)
     Rate.delete_all
     rates.each { | r | r.save }
+  end
+
+  def self.by_times(start_time, end_time)
+    day_keys = ["sun", "mon", "tues", "wed", "thurs", "fri", "sat"]
+    day_key = start_time ? day_keys[start_time.wday] : end_time ? day_keys[end_time.wday] : nil
+
+    # because of the way we are storing the time (2000 1 1) we need to
+    # account for day light savings
+    start_offset = start_time ? (start_time.dst? == true ? 1 : 0) : nil
+    end_offset = end_time ? (end_time.dst? == true ? 1 : 0) : nil
+
+    adj_start_time = start_time ? Time.new(2000, 1, 1, start_time.hour + start_offset, start_time.min, 0, start_time.utc_offset).utc : nil
+    adj_end_time = end_time ? Time.new(2000, 1, 1, end_time.hour + end_offset, end_time.min, 0, end_time.utc_offset).utc : nil
+
+    if adj_start_time && adj_end_time
+      return Rate.order(:price, :start, :end, :timezone).where(["start <= ? AND end >= ? AND day_key = ?", adj_start_time, adj_end_time, day_key]).to_a
+    elsif adj_start_time
+      return Rate.order(:price, :start, :end, :timezone).where(["start <= ? AND day_key = ?", adj_start_time, day_key]).to_a
+    elsif adj_end_time
+      return Rate.order(:price, :start, :end, :timezone).where(["end >= ? AND day_key = ?", adj_end_time, day_key]).to_a
+    else
+      return Rate.order(:price, :start, :end, :timezone).to_a
+    end
   end
 
 

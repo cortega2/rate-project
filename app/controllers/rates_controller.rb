@@ -1,9 +1,12 @@
 require 'structure_validator'
 
 class RatesController < ApplicationController
+  include ActionController::MimeResponds
+
+  before_action :check_query, only: :index
   # GET /rates
   def index
-    @rates = Rate.order(:price, :start, :end, :timezone).to_a
+    @rates = Rate.by_times(@start_time, @end_time)
 
     groups = []
     group_idx = -1
@@ -25,12 +28,10 @@ class RatesController < ApplicationController
       end
     end
 
-    formatted_groups = []
-    groups.each do | group |
-      formatted_groups << StructureValidator.restructure(group)
+    respond_to do |format|
+      format.json { render json: json_response(groups) }
+      format.all { render plain: text_response(groups) }
     end
-
-    render json: {rates: formatted_groups}
   end
 
   # POST /rates
@@ -39,10 +40,10 @@ class RatesController < ApplicationController
 
     status = :created
     error = nil
+
     rates_to_save = []
     rates.each do | group |
       group.symbolize_keys!
-
       # basic error checking
       if !StructureValidator::all_valid?(group)
         status = :unprocessable_entity
@@ -67,4 +68,65 @@ class RatesController < ApplicationController
     render json: {error: error}, status: status
   end
 
+  private
+  def check_query
+    @start_time = params[:start]
+    @end_time = params[:end]
+
+    @range = false
+
+    if @start_time
+      @start_time = Time.parse(@start_time)
+    end
+
+    if @end_time
+      @end_time = Time.parse(@end_time)
+    end
+
+    if @start_time && @end_time
+     @range = true
+    end
+
+    if @range && !(@start_time.to_date === @end_time.to_date)
+      error = "Range cannot spand more than a day"
+      status =  :unprocessable_entity
+
+      respond_to do |format|
+        format.json { render json: {error: error}, status: status}
+        format.all { render plain: error, status: status }
+      end
+    end
+  end
+
+  def text_response(data)
+    # the documentation didnt make it clear
+    # if a rates can overlap, so this check makes sure that
+    # if this does happen we simply return nothing
+    if @range && data.length > 1
+      return "Unavaliable"
+    end
+
+    prices = []
+    data.each do | group |
+      prices << group[0][:price]
+    end
+
+    return prices.length == 0 ? "Unavailable" : prices.join(",")
+  end
+
+  def json_response(data)
+    # the documentation didnt make it clear
+    # if a rates can overlap, so this check makes sure that
+    # if this does happen we simply return nothing
+    if @range && data.length > 1
+      return { rates: [] }
+    end
+
+    formatted_groups = []
+    data.each do | group |
+      formatted_groups << StructureValidator.restructure(group)
+    end
+
+    return { rates: formatted_groups }
+  end
 end
