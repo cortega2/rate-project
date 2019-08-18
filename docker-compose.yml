@@ -8,6 +8,7 @@ services:
       - SQL_DB=rate_server
       - SQL_HOST=db
       - SQL_PORT=3306
+      - DISABLE_DATABASE_ENVIRONMENT_CHECK=1 #this is just for demo purposes 
     command: sh -c "bundle exec rake db:drop && bundle exec rake db:create && bundle exec rake db:migrate && bundle exec rails s" 
     ports:
       - "3000:3000"
