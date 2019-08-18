@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_15_165202) do
+ActiveRecord::Schema.define(version: 2019_08_18_063219) do
 
   create_table "rates", force: :cascade do |t|
     t.text "day_key"
     t.float "price"
-    t.time "start"
-    t.time "end"
+    t.datetime "start"
+    t.datetime "end"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "timezone"
