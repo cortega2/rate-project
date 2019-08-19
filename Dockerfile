@@ -16,6 +16,8 @@ RUN bundle install --without development test
 
 COPY . /var/www/rate_server
 
+RUN EDITOR=vim rails credentials:edit
+
 EXPOSE 3000
 
 CMD ["bundle", "exec", "rails", "s"]
