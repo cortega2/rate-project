@@ -1,0 +1,219 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "Rate Server is a project that keeps tracks of price rates for a particular day of the week. It also allows for checking for rates.",
+    "version": "1.0.0",
+    "title": "Rate Server",
+    "contact": {
+      "email": "corteg20@gmail.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "tags": [
+    {
+      "name": "Rates",
+      "description": "Keep traack of all your rates!",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://github.com/cortega2/rate-project"
+      }
+    }
+  ],
+  "paths": {
+    "/rates": {
+      "post": {
+        "tags": [
+          "Rates"
+        ],
+        "summary": "Update the current rates",
+        "description": "This will replace current rates with the ones that are uploaded.",
+        "requestBody": {
+          "description": "The rates object that needs to be sent to the post request",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rates"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Replaced old rates with new ones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unable to process file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Rates"
+        ],
+        "summary": "Get rates for specifie ranges",
+        "description": "Use this endpoint to check what rates are available",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "The start time to check for rates in ISO-8601 format",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2015-07-01T07:00:00-05:00"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "description": "The start time to check for rates in ISO-8601 format",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2015-07-01T12:00:00-05:00"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rates that match the query. ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rates"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "1000 or Unavailable"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unable to process request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Range cannot spand more than a day"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RateGroup": {
+        "type": "object",
+        "required": [
+          "days",
+          "times",
+          "tz",
+          "price"
+        ],
+        "properties": {
+          "days": {
+            "type": "string",
+            "example": "mon, tues, wed",
+            "enum": [
+              "mon",
+              "tues",
+              "wed",
+              "thurs",
+              "fri",
+              "sat",
+              "sun"
+            ]
+          },
+          "times": {
+            "type": "string",
+            "example": "0900-1000"
+          },
+          "tz": {
+            "type": "string",
+            "example": "America/Chicago"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1000
+          }
+        }
+      },
+      "Rates": {
+        "type": "object",
+        "required": [
+          "rates"
+        ],
+        "properties": {
+          "rates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RateGroup"
+            }
+          }
+        }
+      },
+      "PostResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "The structure is incorrect",
+            "enum": [
+              "The structure is incorrect",
+              "One or more fields are not valid",
+              "null"
+            ]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Range cannot spand more than a day",
+            "enum": [
+              "Range cannot spand more than a day"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
