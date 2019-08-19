@@ -38,6 +38,13 @@ There is also a docker-compose file included that you can use to build the image
 3. The application will be listening to port 3000
 4. The swagger server will be listening to port TODO
 
+## Swagger Docs
+Included is a swagger json doc that can be used to see documentation about the endpoints. If you would like to run it locally you can use docker.
+```
+docker run -p 80:8080 -e SWAGGER_JSON=/json_loc/rate-server-docs.json  -v $(pwd)/docs:/json_loc swaggerapi/swagger-ui
+```
+
+
 ## Endpoints
 ### GET /rates
 This is used to get any or all available rates. You can use query params to search for rates.
